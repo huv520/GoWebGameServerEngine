@@ -6,14 +6,14 @@ import (
 	"fmt";
 	"bufio";
 	"strings";
-	"container/vector";
+	"container/list";
 )
 
 type Server struct {
 	listener		*net.TCPListener;
 	incomingMessages	chan Message;
 	registerForMessages	chan *Client;
-	clients			*vector.Vector;
+	clients			*list.List;
 }
 
 type Message struct {
@@ -24,7 +24,7 @@ type Message struct {
 func (s *Server) StartServer() {
 	s.incomingMessages = make(chan Message);
 	s.registerForMessages = make(chan *Client);
-	s.clients = new(vector.Vector);
+	s.clients = list.New();
 
 	go s.listenForConnections();
 	s.startRouter();
@@ -36,11 +36,10 @@ func (s *Server) startRouter() {
 		case msg := <-s.incomingMessages:
 			s.fanOutMessage(msg)
 		case newClient := <-s.registerForMessages:
-			msg := Message{"**** system ****", "New user " +
-				newClient.nickname + " has joined.\n"};
+			msg := Message{"**** system ****", "New user " + newClient.nickname + " has joined.\n"};
 			s.fanOutMessage(msg);
 
-			s.clients.Push(newClient);
+			s.clients.PushFront(newClient);
 
 			newClient.outgoingMessages <- s.clientList();
 		}
@@ -49,20 +48,22 @@ func (s *Server) startRouter() {
 
 func (s *Server) clientList() (m Message) {
 	clientNicknames := make([]string, s.clients.Len());
-	for i := 0; i < s.clients.Len(); i++ {
-		client := s.clients.At(i).(*Client);
+	
+	for e := l.Front(); e != nil; e = e.Next() {
+		client := e.Value;
 		clientNicknames[i] = client.nickname;
 	}
 
-	str := "Online users: " +
-		strings.Join(clientNicknames, "   ") + "\n";
+	str := "Online users: " + strings.Join(clientNicknames, "   ") + "\n";
 
 	return Message{"**** system ****", str};
 }
 
 func (s *Server) fanOutMessage(msg Message) {
-	for i := 0; i < s.clients.Len(); i++ {
-		client := s.clients.At(i).(*Client);
+	clientNicknames := make([]string, s.clients.Len());
+	
+	for e := l.Front(); e != nil; e = e.Next() {
+		client := e.Value;
 		ch := client.outgoingMessages;
 
 		if closed(ch) {
@@ -72,6 +73,7 @@ func (s *Server) fanOutMessage(msg Message) {
 			ch <- msg
 		}
 	}
+	
 }
 
 func (s *Server) listenForConnections() {
@@ -137,8 +139,7 @@ func (c *Client) receiveMessages() {
 		}
 		if err == os.EOF {
 			close(c.outgoingMessages);
-			msg := Message{"**** system ****", "User " +
-				c.nickname + " has left.\n"};
+			msg := Message{"**** system ****", "User " + c.nickname + " has left.\n"};
 			c.incomingMessages <- msg;
 			return;
 		}
