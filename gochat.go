@@ -49,7 +49,7 @@ func (s *Server) startRouter() {
 func (s *Server) clientList() (m Message) {
 	clientNicknames := make([]string, s.clients.Len());
 	
-	for e := l.Front(); e != nil; e = e.Next() {
+	for e := s.clients.Front(); e != nil; e = e.Next() {
 		client := e.Value;
 		clientNicknames[i] = client.nickname;
 	}
@@ -62,7 +62,7 @@ func (s *Server) clientList() (m Message) {
 func (s *Server) fanOutMessage(msg Message) {
 	clientNicknames := make([]string, s.clients.Len());
 	
-	for e := l.Front(); e != nil; e = e.Next() {
+	for e := s.clients.Front(); e != nil; e = e.Next() {
 		client := e.Value;
 		ch := client.outgoingMessages;
 
