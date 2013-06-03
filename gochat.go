@@ -1,4 +1,4 @@
-package gochat
+package main
 
 import (
 	"net"
@@ -58,6 +58,8 @@ func (s *Server) clientList() (m Message) {
 
 	str := "Online users: " + strings.Join(clientNicknames, "   ") + "\n";
 
+	fmt.Println(str)
+	
 	return Message{"**** system ****", str};
 }
 
@@ -122,7 +124,7 @@ func (c *Client) requestNick() {
 	c.conn.Write([]byte("Please enter your nickname: "));
 
 	nickname, _ := c.reader.ReadString('\n');
-
+	fmt.Println(c.nickname)
 	// This is kinda stupid, but hell.
 	if strings.HasSuffix(nickname, "\r\n") {
 		c.nickname = nickname[0 : len(nickname)-2]
@@ -140,6 +142,8 @@ func (c *Client) receiveMessages() {
 	for {
 		bytes, err := c.reader.ReadString('\n');
 		if err == nil {
+			fmt.Println(c.nickname)
+		
 			msg := Message{c.nickname, bytes};
 			c.incomingMessages <- msg;
 		}
@@ -175,3 +179,9 @@ func (c *Client) sendMessage(msg Message) {
      }
  
  }
+ 
+ func main() {
+        a := new(Server)
+        a.listenForConnections()
+
+}
