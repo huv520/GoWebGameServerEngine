@@ -83,9 +83,9 @@ func (s *Server) fanOutMessage(msg Message) {
 }
 
 func (s *Server) listenForConnections() {
-	ip := net.ParseIP("127.0.0.1");
-	addr := &net.TCPAddr{ip, 9999};
-	s.listener, _ = net.ListenTCP("tcp", addr);
+	ip := net.ParseIP("127.0.0.1")
+	addr := &net.TCPAddr{ip, 9999}
+	s.listener, _ = net.ListenTCP("tcp", addr)
 
 	for {
 		s.acceptClient()
@@ -143,19 +143,19 @@ func (c *Client) receiveMessages() {
 			msg := Message{c.nickname, bytes};
 			c.incomingMessages <- msg;
 		}
-		if err == os.EOF {
-			close(c.outgoingMessages);
-			msg := Message{"**** system ****", "User " + c.nickname + " has left.\n"};
-			c.incomingMessages <- msg;
-			return;
-		}
+		//if err == os.EOF {
+		//	close(c.outgoingMessages);
+		//	msg := Message{"**** system ****", "User " + c.nickname + " has left.\n"};
+		//	c.incomingMessages <- msg;
+		//	return;
+		//}
 	}
 }
 
 func (c *Client) sendMessages() {
 	for {
-		msg := <-c.outgoingMessages;
-		if closed(c.outgoingMessages) {
+		msg, ok := <-c.outgoingMessages;
+		if !ok {
 			return
 		}
 		if msg.sender != c.nickname {
