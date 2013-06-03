@@ -63,8 +63,10 @@ func (s *Server) clientList() (m Message) {
 
 func (s *Server) fanOutMessage(msg Message) {
 	
-	i := 0;
-	for e := s.clients.Front(); e != nil; e = e.Next() {
+	e := s.clients.Front()
+	for e != nil {
+		tmp := e.Next()
+
 		client := e.Value.(Client)
 		ch := client.outgoingMessages
 
@@ -73,10 +75,9 @@ func (s *Server) fanOutMessage(msg Message) {
 			ch <- msg
 			
 		} else {
-			s.clients.Remove(e);
-			i--;
+			s.clients.Remove(e)
 		}
-		i++;
+		e = tmp
 	}
 	
 }
