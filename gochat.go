@@ -1,7 +1,7 @@
 package gochat
 
 import (
-  "os";
+  	"os";
 	"net";
 	"fmt";
 	"bufio";
@@ -49,11 +49,11 @@ func (s *Server) startRouter() {
 func (s *Server) clientList() (m Message) {
 	clientNicknames := make([]string, s.clients.Len());
 	
-	i := 0
+	i := 0;
 	for e := s.clients.Front(); e != nil; e = e.Next() {
-		client := e.Value;
+		client := e.Value.(Client);
 		clientNicknames[i] = client.nickname;
-		i++
+		i++;
 	}
 
 	str := "Online users: " + strings.Join(clientNicknames, "   ") + "\n";
@@ -64,18 +64,19 @@ func (s *Server) clientList() (m Message) {
 func (s *Server) fanOutMessage(msg Message) {
 	clientNicknames := make([]string, s.clients.Len());
 	
-	i := 0
+	i := 0;
 	for e := s.clients.Front(); e != nil; e = e.Next() {
-		client := e.Value;
+		client := e.Value.(Client);
 		ch := client.outgoingMessages;
 
-		if closed(ch) {
-			s.clients.Remove(client);
+		val, ok <- ch
+		if !ok {
+			s.clients.Remove(e);
 			i--;
 		} else {
 			ch <- msg
 		}
-		i++
+		i++;
 	}
 	
 }
