@@ -1,8 +1,8 @@
 package gochat
 
 import (
-  	"os"
 	"net"
+	"log"
 	"fmt"
 	"bufio"
 	"strings"
@@ -62,14 +62,13 @@ func (s *Server) clientList() (m Message) {
 }
 
 func (s *Server) fanOutMessage(msg Message) {
-	clientNicknames := make([]string, s.clients.Len());
 	
 	i := 0;
 	for e := s.clients.Front(); e != nil; e = e.Next() {
 		client := e.Value.(Client)
 		ch := client.outgoingMessages
 
-		val, ok := <- ch
+		_, ok := <- ch
 		if ok {
 			ch <- msg
 			
@@ -83,10 +82,10 @@ func (s *Server) fanOutMessage(msg Message) {
 }
 
 func (s *Server) listenForConnections() {
-	ip := net.ParseIP("127.0.0.1")
-	addr := &net.TCPAddr{ip, 9999}
-	s.listener, _ = net.ListenTCP("tcp", addr)
-
+	tcpAddr, err := net.ResolveTCPAddr("tcp", ":9988")
+     	check_error(err)
+     	s.listener, err = net.ListenTCP("tcp", tcpAddr)
+     	check_error(err)
 	for {
 		s.acceptClient()
 	}
@@ -168,3 +167,10 @@ func (c *Client) sendMessage(msg Message) {
 	str := fmt.Sprintf("%s: %s", msg.sender, msg.message);
 	c.conn.Write([]byte(str));
 }
+
+ func check_error(err error) {
+     if err != nil {
+         log.Printf("Fatal error : %s", err.Error())
+     }
+ 
+ }
