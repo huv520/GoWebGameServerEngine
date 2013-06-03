@@ -49,9 +49,11 @@ func (s *Server) startRouter() {
 func (s *Server) clientList() (m Message) {
 	clientNicknames := make([]string, s.clients.Len());
 	
+	i := 0
 	for e := s.clients.Front(); e != nil; e = e.Next() {
 		client := e.Value;
 		clientNicknames[i] = client.nickname;
+		i++
 	}
 
 	str := "Online users: " + strings.Join(clientNicknames, "   ") + "\n";
@@ -62,16 +64,18 @@ func (s *Server) clientList() (m Message) {
 func (s *Server) fanOutMessage(msg Message) {
 	clientNicknames := make([]string, s.clients.Len());
 	
+	i := 0
 	for e := s.clients.Front(); e != nil; e = e.Next() {
 		client := e.Value;
 		ch := client.outgoingMessages;
 
 		if closed(ch) {
-			s.clients.Delete(i);
+			s.clients.Remove(client);
 			i--;
 		} else {
 			ch <- msg
 		}
+		i++
 	}
 	
 }
