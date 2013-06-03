@@ -1,12 +1,12 @@
 package gochat
 
 import (
-  	"os";
-	"net";
-	"fmt";
-	"bufio";
-	"strings";
-	"container/list";
+  	"os"
+	"net"
+	"fmt"
+	"bufio"
+	"strings"
+	"container/list"
 )
 
 type Server struct {
@@ -66,15 +66,16 @@ func (s *Server) fanOutMessage(msg Message) {
 	
 	i := 0;
 	for e := s.clients.Front(); e != nil; e = e.Next() {
-		client := e.Value.(Client);
-		ch := client.outgoingMessages;
+		client := e.Value.(Client)
+		ch := client.outgoingMessages
 
-		val, ok <- ch
-		if !ok {
+		val, ok := <- ch
+		if ok {
+			ch <- msg
+			
+		} else {
 			s.clients.Remove(e);
 			i--;
-		} else {
-			ch <- msg
 		}
 		i++;
 	}
@@ -118,7 +119,7 @@ func newClient(conn *net.TCPConn, incoming chan Message) (c *Client) {
 }
 
 func (c *Client) requestNick() {
-	c.conn.Write(strings.Bytes("Please enter your nickname: "));
+	c.conn.Write([]byte("Please enter your nickname: "));
 
 	nickname, _ := c.reader.ReadString('\n');
 
@@ -165,5 +166,5 @@ func (c *Client) sendMessages() {
 
 func (c *Client) sendMessage(msg Message) {
 	str := fmt.Sprintf("%s: %s", msg.sender, msg.message);
-	c.conn.Write(strings.Bytes(str));
+	c.conn.Write([]byte(str));
 }
