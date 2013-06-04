@@ -100,7 +100,8 @@ func (s *Server) acceptClient() {
 
 	client.requestNick();
 	s.registerForMessages <- client;
-	client.sendReceiveMessages();
+	go client.receiveMessages();
+	go client.sendMessages();
 }
 
 type Client struct {
@@ -124,7 +125,7 @@ func (c *Client) requestNick() {
 	c.conn.Write([]byte("Please enter your nickname: "));
 
 	nickname, _ := c.reader.ReadString('\n');
-	fmt.Println(c.nickname)
+	fmt.Println(nickname)
 	// This is kinda stupid, but hell.
 	if strings.HasSuffix(nickname, "\r\n") {
 		c.nickname = nickname[0 : len(nickname)-2]
@@ -133,17 +134,12 @@ func (c *Client) requestNick() {
 	}
 }
 
-func (c *Client) sendReceiveMessages() {
-	go c.receiveMessages();
-	go c.sendMessages();
-}
 
 func (c *Client) receiveMessages() {
 	for {
 		bytes, err := c.reader.ReadString('\n');
 		if err == nil {
 			fmt.Println(c.nickname)
-		
 			msg := Message{c.nickname, bytes};
 			c.incomingMessages <- msg;
 		}
