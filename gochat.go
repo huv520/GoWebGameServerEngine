@@ -143,12 +143,12 @@ func (c *Client) receiveMessages() {
 			msg := Message{c.nickname, bytes};
 			c.incomingMessages <- msg;
 		}
-		//if err == os.EOF {
-		//	close(c.outgoingMessages);
-		//	msg := Message{"**** system ****", "User " + c.nickname + " has left.\n"};
-		//	c.incomingMessages <- msg;
-		//	return;
-		//}
+		if err == io.EOF {
+			close(c.outgoingMessages);
+			msg := Message{"**** system ****", "User " + c.nickname + " has left.\n"};
+			c.incomingMessages <- msg;
+			return;
+		}
 	}
 }
 
