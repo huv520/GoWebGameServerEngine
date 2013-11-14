@@ -1,7 +1,7 @@
-gwge
+gwgse
 ====
 
-golang web game engine
+Go Web Game Server Engine
 <br>
 go语言网页游戏引擎
 <br>
