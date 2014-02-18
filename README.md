@@ -11,3 +11,5 @@ go语言网页游戏引擎
 mysql: https://github.com/Go-SQL-Driver/MySQL
 <br>
 redis: https://github.com/garyburd/redigo
+<br>
+simplejson: https://github.com/bitly/go-simplejson
