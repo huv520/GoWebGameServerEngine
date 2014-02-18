@@ -12,9 +12,9 @@ import (
 )
 
 import (
+	"github.com/bitly/go-simplejson"
 	"protos"
 	"utils"
-	"github.com/bitly/go-simplejson"
 )
 
 func start() {
@@ -37,7 +37,7 @@ func start() {
 			continue
 		}
 
-		// DoS prevention
+		// DoS prevention  流量攻击预防
 		IP := net.ParseIP(conn.RemoteAddr().String())
 		if !utils.IsBanned(IP) {
 			go handleClient(conn)
@@ -102,62 +102,3 @@ func checkError(err error) {
 func init() {
 	log.SetPrefix("[GS]")
 }
-
-//----------------------------------------------- Start Agent when a client is connected
-func StartAgent(in chan []byte, conn net.Conn) {
-	defer func() {
-		if x := recover(); x != nil {
-			log.Println("unknown agent routine error")
-		}
-	}()
-
-	var sess Session
-	sess.IP = net.ParseIP(conn.RemoteAddr().String())
-	sess.ConnectTime = time.Now()
-	sess.LastPacketTime = time.Now().Unix()
-	sess.KickOut = false
-
-	// write buffer
-	bufctrl := make(chan bool)
-	buf := NewBuffer(&sess, conn, bufctrl)
-	go buf.Start()
-
-	// cleanup work
-	defer func() {
-		close(bufctrl)
-	}()
-
-	// the main message loop
-	for {
-		select {
-		case msg, ok := <-in:
-			if !ok {
-				return
-			}
-			
-			 js, err := simplejson.NewJson([]byte(msg))
-			 if err != nil {
-				// TODO: Send error json back to client
-				log.Printf("parse json error:", err);
-				continue
-			}
-
-			if result := commandDispatcher(&sess, js); result != nil {
-				err := buf.Send(result)
-				if err != nil {
-					return
-				}
-			}
-			sess.LastPacketTime = time.Now().Unix()
-
-		}
-
-		// 是否被逻辑踢出
-		if sess.KickOut {
-			return
-		}
-	}
-}
-
-
-

@@ -1,14 +1,12 @@
 package utils
 
 import (
+	"encoding/binary"
 	"fmt"
-	"runtime"
-	"stat"
-	"strconv"
 	"net"
-	" "encoding/binary""
+	"runtime"
+	"strconv"
 )
-
 
 type Stat struct {
 	Load1   float64
@@ -37,19 +35,19 @@ func SysStat() *Stat {
 }
 
 func Ip2Uint32(ipstr string) uint32 {
-        ip := net.ParseIP(ipstr)
-        if ip == nil {
-            return 0
-        }
-        ip = ip.To4()
-        return binary.BigEndian.Uint32(ip)
+	ip := net.ParseIP(ipstr)
+	if ip == nil {
+		return 0
+	}
+	ip = ip.To4()
+	return binary.BigEndian.Uint32(ip)
 }
 
 func Ip2String(ipLong uint32) string {
-        ipByte := make([]byte, 4)
-        binary.BigEndian.PutUint32(ipByte, ipLong)
-        ip := net.IP(ipByte)
-        return ip.String()
+	ipByte := make([]byte, 4)
+	binary.BigEndian.PutUint32(ipByte, ipLong)
+	ip := net.IP(ipByte)
+	return ip.String()
 }
 
 func PrintPanicStack() {

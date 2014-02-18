@@ -8,16 +8,13 @@ import (
 	"net"
 )
 
-import (
-	"types"
-)
 
 type Buffer struct {
 	ctrl    chan bool   // receive exit signal
 	pending chan []byte // pending Packet
 	max     int         // max queue size
 	conn    net.Conn    // connection
-	sess    Session     // session
+	player  Player     // player
 }
 
 const (
@@ -31,7 +28,7 @@ func (buf *Buffer) Send(data []byte) (err error) {
 		buf.pending <- data
 		return nil
 	} else {
-		Ban(buf.sess.IP)
+		Ban(buf.player.IP)
 		return errors.New(fmt.Sprintf("Send Buffer Overflow, possible DoS attack. Remote: %v", buf.conn.RemoteAddr()))
 	}
 }
@@ -74,7 +71,7 @@ func (buf *Buffer) raw_send(data []byte) {
 }
 
 //------------------------------------------------ create a new write buffer
-func NewBuffer(sess *Session, conn net.Conn, ctrl chan bool) *Buffer {
+func NewBuffer(player *Player, conn net.Conn, ctrl chan bool) *Buffer {
 	max := DEFAULT_QUEUE_SIZE
 
 	buf := Buffer{conn: conn}

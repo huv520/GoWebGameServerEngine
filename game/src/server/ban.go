@@ -7,7 +7,7 @@ import (
 )
 
 import (
-	"./helper"
+	"utils"
 )
 
 const (
@@ -25,16 +25,16 @@ func init() {
 func Ban(_ip net.IP) {
 	ban_time := DEFAULT_BAN_TIME
 
-	intip := _ip2int(_ip)
+	intip := utils.Ip2Uint32(_ip)
 
 	// randomize the timeout, for effective DoS protection
 	ban := uint32(ban_time)
-	_banned_ips[intip] = time.Now().Unix() + int64(ban+helper.LCG()%ban)
+	_banned_ips[intip] = time.Now().Unix() + int64(ban+utils.LCG()%ban)
 }
 
 //---------------------------------------------------------- test whether the ip is banned
 func IsBanned(_ip net.IP) bool {
-	intip := _ip2int(_ip)
+	intip := utils.Ip2Uint32(_ip)
 	timeout, exists := _banned_ips[intip]
 
 	if !exists {
@@ -45,13 +45,4 @@ func IsBanned(_ip net.IP) bool {
 	} else {
 		return true
 	}
-}
-
-func _ip2int(_ip net.IP) uint32 {
-	ip := _ip.To4()
-	if ip != nil {
-		return binary.BigEndian.Uint32(ip)
-	}
-
-	return 0
 }

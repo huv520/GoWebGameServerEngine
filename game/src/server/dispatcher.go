@@ -12,12 +12,12 @@ import (
 )
 
 import (
+	"github.com/bitly/go-simplejson"
 	"protos"
 	"utils"
-	"github.com/bitly/go-simplejson"
 )
 
-func call(sess *Session, js *simplejson.Json) []byte {
+func call(player *Player, js *simplejson.Json) []byte {
 	defer utils.PrintPanicStack()
 	now := time.Now()
 
@@ -36,18 +36,18 @@ func call(sess *Session, js *simplejson.Json) []byte {
 
 		err := json.Unmarshal(p[2:], &tbl)
 		if err != nil {
-			sess.KickOut = true
+			player.KickOut = true
 			log.Printf("json error: (%s)\n", err.Error())
 		}
 
 		log.Printf("read data: (%v)\n", tbl)
 
-		ret := handle(sess, tbl)
+		ret := handle(player, tbl)
 		if len(ret) != 0 {
 
 			outBuf, err := json.Marshal(ret)
 			if err != nil {
-				sess.KickOut = true
+				player.KickOut = true
 				log.Printf("json error: (%s)\n", err.Error())
 			}
 
